@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:treasure_quest/features/home/show_treasure_list.dart';
 import 'package:treasure_quest/features/profile/profile_screen.dart';
 import '../../common/constants/app_styles.dart';
-import '../../models/treasure_model.dart';
+import '../../providers/user_provider.dart';
 
 class HomeScreen extends StatelessWidget {
   static const routeName = '/home';
@@ -10,6 +11,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userPoints = Provider.of<UserProvider>(context).user?.points ?? 0;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Nearby Treasures'),
@@ -55,11 +57,11 @@ class HomeScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: AppColors.primary.withOpacity(0.5)),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.stars, color: AppColors.primary, size: 20),
-                  SizedBox(width: 8),
-                  Text('1,250 PTS', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Icon(Icons.stars, color: AppColors.primary, size: 20),
+                  const SizedBox(width: 8),
+                  Text('$userPoints PTS', style: const TextStyle(fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
