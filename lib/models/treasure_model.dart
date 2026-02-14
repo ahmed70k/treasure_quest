@@ -6,6 +6,7 @@ class TreasureModel {
   final double longitude;
   final int rewardPoints;
   final String difficulty;
+  final bool isActive;
 
   TreasureModel({
     required this.id,
@@ -15,26 +16,32 @@ class TreasureModel {
     required this.longitude,
     required this.rewardPoints,
     required this.difficulty,
+    this.isActive = true,
   });
 
-  static List<TreasureModel> get dummyList => [
-        TreasureModel(
-          id: '1',
-          title: 'Golden Goblet',
-          description: 'An ancient artifact hidden in the city park.',
-          latitude: 30.0444,
-          longitude: 31.2357,
-          rewardPoints: 500,
-          difficulty: 'Easy',
-        ),
-        TreasureModel(
-          id: '2',
-          title: 'Silver Dagger',
-          description: 'Found near the old library ruins.',
-          latitude: 30.0450,
-          longitude: 31.2360,
-          rewardPoints: 750,
-          difficulty: 'Medium',
-        ),
-      ];
+  factory TreasureModel.fromFireStore(String id, Map<String, dynamic> data) {
+    return TreasureModel(
+      id: id,
+      title: data['title'] ?? 'Unknown Treasure',
+      description: data['description'] ?? '',
+      latitude: (data['latitude'] as num).toDouble(),
+      longitude: (data['longitude'] as num).toDouble(),
+      rewardPoints: data['rewardPoints'] ?? 0,
+      difficulty: data['difficulty'] ?? 'Easy',
+      isActive: data['isActive'] ?? true,
+    );
+  }
+
+  Map<String, dynamic> toFireStore() {
+    return {
+      'title': title,
+      'description': description,
+      'latitude': latitude,
+      'longitude': longitude,
+      'rewardPoints': rewardPoints,
+      'difficulty': difficulty,
+      'isActive': isActive,
+    };
+  }
 }
+

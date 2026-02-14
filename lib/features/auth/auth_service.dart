@@ -5,14 +5,24 @@ import '../../models/user_model.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
-  final FirestoreService _firestoreService = FirestoreService();
+
+  // التعديل هنا: استخدام الإعدادات الافتراضية بشكل صريح
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: [
+      'email',
+    ],
+  );
+
+  final FireStoreService _fireStoreService = FireStoreService();
 
   // Stream to listen to auth state changes
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
   // Get current user UID
   String? get currentUserUid => _auth.currentUser?.uid;
+
+  // Get current user object
+  User? get currentUser => _auth.currentUser;
 
   // Sign in with Email and Password
   Future<UserModel?> signInWithEmail(String email, String password) async {
@@ -21,9 +31,9 @@ class AuthService {
         email: email,
         password: password,
       );
-      
+
       if (credential.user != null) {
-        return await _firestoreService.getUserData(credential.user!.uid);
+        return await _fireStoreService.getUserData(credential.user!.uid);
       }
       return null;
     } on FirebaseAuthException catch (e) {
@@ -55,7 +65,7 @@ class AuthService {
     } on FirebaseAuthException catch (e) {
       // التعامل مع حالة الـ Race Condition:
       if (e.code == 'email-already-in-use' && _auth.currentUser?.email == email) {
-        return await _firestoreService.getUserData(_auth.currentUser!.uid);
+        return await _fireStoreService.getUserData(_auth.currentUser!.uid);
       }
       throw _handleFirebaseAuthException(e);
     } catch (e) {
@@ -73,13 +83,16 @@ class AuthService {
       points: 0,
       treasures: [],
     );
-    await _firestoreService.saveUserData(newUser);
+    await _fireStoreService.saveUserData(newUser);
     return newUser;
   }
 
   // Sign in with Google
   Future<UserCredential?> signInWithGoogle() async {
     try {
+      // تأكد من تسجيل الخروج أولاً لضمان ظهور قائمة الحسابات
+      await _googleSignIn.signOut();
+
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) return null;
 

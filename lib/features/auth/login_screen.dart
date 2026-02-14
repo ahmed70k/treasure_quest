@@ -43,7 +43,9 @@ class _LoginScreenState extends State<LoginScreen> {
           _passwordController.text.trim(),
         );
         if (user != null && mounted) {
-          Provider.of<UserProvider>(context, listen: false).setUser(user);
+          final userProvider = Provider.of<UserProvider>(context, listen: false);
+          userProvider.setUser(user);
+          userProvider.listenToUser(user.id);
           Navigator.pushReplacementNamed(context, HomeScreen.routeName);
         }
       } catch (e) {
