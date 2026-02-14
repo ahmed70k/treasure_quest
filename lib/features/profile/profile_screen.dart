@@ -4,15 +4,26 @@ import '../../common/constants/app_styles.dart';
 import '../../providers/user_provider.dart';
 import '../auth/auth_service.dart';
 import '../auth/login_screen.dart';
+import 'treasure_vault_screen.dart';
+import 'edit_profile_screen.dart';
+import 'settings_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   static const String routeName = '/profile';
   const ProfileScreen({super.key});
 
+  String _getRank(int points) {
+    if (points < 200) return 'Novice';
+    if (points < 500) return 'Apprentice';
+    if (points < 1000) return 'Explorer';
+    return 'Master';
+  }
+
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
     final user = userProvider.user;
+    final rank = _getRank(user?.points ?? 0);
 
     return Scaffold(
       appBar: AppBar(title: const Text('My Profile')),
@@ -20,10 +31,15 @@ class ProfileScreen extends StatelessWidget {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            const CircleAvatar(
+            CircleAvatar(
               radius: 60,
               backgroundColor: AppColors.surface,
-              child: Icon(Icons.person, size: 60, color: AppColors.primary),
+              backgroundImage: user?.profileImageUrl != null
+                  ? NetworkImage(user!.profileImageUrl!)
+                  : null,
+              child: user?.profileImageUrl == null
+                  ? const Icon(Icons.person, size: 60, color: AppColors.primary)
+                  : null,
             ),
             const SizedBox(height: 16),
             Text(user?.name ?? 'Anonymous Hunter', style: AppTextStyles.h1),
@@ -32,15 +48,36 @@ class ProfileScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildStatCard('Rank', 'Beginner'),
+                _buildStatCard('Rank', rank),
                 _buildStatCard('Points', (user?.points ?? 0).toString()),
                 _buildStatCard('Treasures', (user?.treasures.length ?? 0).toString()),
               ],
             ),
             const SizedBox(height: 40),
-            _buildProfileOption(Icons.edit_outlined, 'Edit Profile', onTap: () {}),
-            _buildProfileOption(Icons.history_outlined, 'Hunt History', onTap: () {}),
-            _buildProfileOption(Icons.settings_outlined, 'Settings', onTap: () {}),
+            _buildProfileOption(Icons.edit_outlined, 'Edit Profile', onTap: () {
+              if (user != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => EditProfileScreen(user: user)),
+                );
+              }
+            }),
+            _buildProfileOption(Icons.inventory_2_outlined, 'Treasure Vault', onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => TreasureVaultScreen(
+                    treasureIds: user?.treasures ?? [],
+                  ),
+                ),
+              );
+            }),
+            _buildProfileOption(Icons.settings_outlined, 'Settings', onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
+            }),
             const Divider(height: 48),
             _buildProfileOption(
               Icons.logout, 
